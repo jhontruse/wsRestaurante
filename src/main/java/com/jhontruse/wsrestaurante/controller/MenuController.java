@@ -123,6 +123,17 @@ public class MenuController {
         return ResponseEntity.ok(menuOpt);
     }
 
+    @Operation(summary = "Buscar menu", description = "")
+    @GetMapping("find/username/{username}")
+    public ResponseEntity<List<Menu>> procedureFindMenuByUsername(
+            @PathVariable @Parameter(description = "Nombre a buscar", example = "", required = true) String username) {
+        log.info("MenuController - procedureFindMenuByUsername");
+        log.info("username: {}", username);
+        List<Menu> menuOpt = iMenuService.procedureFindMenuByUsername(username);
+        log.info("menuOpt {}", menuOpt);
+        return ResponseEntity.ok(menuOpt);
+    }
+
     @Operation(summary = "Registrar menu", description = "")
     @PostMapping("save")
     public ResponseEntity<Menu> save(@Valid @RequestBody Menu menu) {

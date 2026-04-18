@@ -128,6 +128,18 @@ public class MenuService implements IMenuService {
     }
 
     @Override
+    public List<Menu> procedureFindMenuByUsername(String username) {
+        log.info("MenuService - procedureFindMenuByUsername");
+        log.info("username {}", username);
+        List<Menu> menuOpt = iMenuRepository.procedureFindMenuByUsername(username).stream().toList();
+        log.info("menuOpt {}", menuOpt);
+        if (menuOpt.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron registros de Menu");
+        }
+        return menuOpt;
+    }
+
+    @Override
     public Menu save(Menu menu) {
         log.info("MenuService - save");
         menuValidator.validarParaCrear(menu);

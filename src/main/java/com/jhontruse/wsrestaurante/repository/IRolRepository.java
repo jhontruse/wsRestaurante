@@ -1,7 +1,6 @@
 package com.jhontruse.wsrestaurante.repository;
 
 import com.jhontruse.wsrestaurante.model.entity.Rol;
-import jakarta.validation.constraints.Null;
 import lombok.NonNull;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;

@@ -25,6 +25,8 @@ public interface IMenuService {
 
     List<Menu> findMenuByNombreStartingWith(String nombre);
 
+    List<Menu> procedureFindMenuByUsername(String username);
+
     Menu save(Menu menu);
 
     Menu update(Menu menu);

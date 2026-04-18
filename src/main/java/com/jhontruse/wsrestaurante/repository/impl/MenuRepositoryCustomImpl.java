@@ -1,7 +1,9 @@
 package com.jhontruse.wsrestaurante.repository.impl;
 
 import com.jhontruse.wsrestaurante.exception.BusinessException;
+import com.jhontruse.wsrestaurante.exception.ResourceNotFoundException;
 import com.jhontruse.wsrestaurante.model.entity.Menu;
+import com.jhontruse.wsrestaurante.model.mapper.MenuRowMapper;
 import com.jhontruse.wsrestaurante.repository.MenuRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,8 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Types;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -21,6 +25,8 @@ import java.util.Map;
 public class MenuRepositoryCustomImpl implements MenuRepositoryCustom {
 
     private final JdbcTemplate jdbcTemplate;
+
+    private final MenuRowMapper menuRowMapper;
 
     @Override
     public Menu procedureSaveMenu(Menu menu) {
@@ -98,5 +104,39 @@ public class MenuRepositoryCustomImpl implements MenuRepositoryCustom {
             throw new BusinessException(pStatus, "BUSINESS_ERROR", pMsg);
         }
         return menu;
+    }
+
+    @Override
+    public List<Menu> procedureFindMenuByUsername(String username) {
+        log.info("MenuRepositoryCustomImpl - procedureFindMenuByUsername");
+        log.info("username {}", username);
+        // ---------- SALIDAS ----------
+        SimpleJdbcCall spFindMenu = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("BD_RESTAURANTE")
+                .withCatalogName("PK_BD_RESTAURANTE")
+                .withProcedureName("P_FIND_MENU_BY_USERNAME")
+                .withoutProcedureColumnMetaDataAccess()
+                .declareParameters(
+                        new SqlParameter("P_USERNAME", Types.VARCHAR),
+                        // ---------- SALIDAS ----------
+                        new SqlOutParameter("P_CURSOR", Types.REF_CURSOR, menuRowMapper),
+                        new SqlOutParameter("P_STATUS", Types.INTEGER),
+                        new SqlOutParameter("P_MSG", Types.VARCHAR));
+        // ---------- FIN  ----------
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("P_USERNAME", username);
+        Map<String, Object> result = spFindMenu.execute(params);
+        Integer pStatus = (Integer) result.get("P_STATUS");
+        String pMsg = (String) result.get("P_MSG");
+        log.debug("SP Response -> pStatus: {}, pMsg: {}", pStatus, pMsg);
+        if (pStatus == null || pStatus != 0) {
+            throw new BusinessException(pStatus, "BUSINESS_ERROR", pMsg);
+        }
+        List<Menu> menus = (List<Menu>) result.get("P_CURSOR");
+        if (menus == null || menus.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron registros de Menu");
+        }
+        log.info("Menús encontrados para {}: {}", username, menus.size());
+        return menus;
     }
 }
